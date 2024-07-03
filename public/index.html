@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <label for="inpFile">Select PDF</label>
+    <input type="file" id="inpFile" />
+
+    <label for="inpFileImg">Select Image</label>
+    <input type="file" id="inpFileImg" />
+
+    <button type="button" id="btnUpload">Upload</button>
+    <br />
+    <br />
+    <p
+      style="width: 300px; height: 150px"
+      id="resultText"
+      placeholder="Your PDF and Image text will appear here..."
+    ></p>
+
+    <script>
+      const inpFile = document.getElementById("inpFile");
+      const inpFileImg = document.getElementById("inpFileImg");
+      const btnUpload = document.getElementById("btnUpload");
+      const resultText = document.getElementById("resultText");
+
+      btnUpload.addEventListener("click", () => {
+        const formData = new FormData();
+
+        if (inpFile.files.length === 0 || inpFileImg.files.length === 0) {
+          alert("Please select both a PDF file and an image file.");
+          return;
+        }
+
+        formData.append("pdfFile", inpFile.files[0]);
+        formData.append("imgFile", inpFileImg.files[0]);
+
+        fetch("/extract-text", {
+          method: "POST",
+          body: formData,
+        })
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error("Network response was not ok");
+            }
+            return response.json();
+          })
+          .then((data) => {
+            const combinedText = `PDF Text:\n${data.pdfData}\n\nImage Text:\n${data.imgData}`;
+            resultText.innerText = combinedText.trim();
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+            resultText.value = "Error extracting text.";
+          });
+      });
+    </script>
+  </body>
+</html>
